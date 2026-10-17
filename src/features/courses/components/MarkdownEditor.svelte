@@ -24,7 +24,18 @@
       el.removeAttribute("aria-role");
     });
 
-    // 2. Fix buttons without accessible names
+    // 2. Ensure parent of role="tab" elements has role="tablist"
+    const tabs = editorContainer.querySelectorAll('[role="tab"], .tab-item');
+    tabs.forEach((tab) => {
+      tab.setAttribute("role", "tab");
+      const parent = tab.parentElement;
+      if (parent && parent.getAttribute("role") !== "tablist") {
+        parent.setAttribute("role", "tablist");
+        parent.removeAttribute("aria-role");
+      }
+    });
+
+    // 3. Fix buttons without accessible names
     const buttons = editorContainer.querySelectorAll("button");
     buttons.forEach((btn) => {
       if (!btn.getAttribute("aria-label") && !btn.innerText?.trim()) {
@@ -33,7 +44,7 @@
       }
     });
 
-    // 3. Fix pseudo clipboard textarea without accessible label
+    // 4. Fix pseudo clipboard textarea without accessible label
     const clipboards = editorContainer.querySelectorAll("textarea");
     clipboards.forEach((ta) => {
       if (!ta.getAttribute("aria-label")) {

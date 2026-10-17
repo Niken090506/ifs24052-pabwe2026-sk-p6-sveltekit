@@ -115,6 +115,13 @@ describe("MarkdownEditor", () => {
       tab2.setAttribute("aria-role", "");
       container.appendChild(tab2);
 
+      const tablistContainer = document.createElement("div");
+      tablistContainer.setAttribute("role", "tablist");
+      const tabInList = document.createElement("div");
+      tabInList.setAttribute("role", "tab");
+      tablistContainer.appendChild(tabInList);
+      container.appendChild(tablistContainer);
+
       const btnWithTitle = document.createElement("button");
       btnWithTitle.setAttribute("title", "More Tools");
       container.appendChild(btnWithTitle);
