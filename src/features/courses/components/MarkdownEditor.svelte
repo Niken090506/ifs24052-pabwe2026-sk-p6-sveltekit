@@ -9,6 +9,38 @@
 
   let editorContainer: HTMLElement;
   let editorInstance: any = null;
+  let observer: MutationObserver | null = null;
+
+  export function sanitizeEditorA11y() {
+    if (!editorContainer) return;
+
+    // 1. Convert non-standard aria-role attribute to standard role attribute
+    const invalidRoles = editorContainer.querySelectorAll("[aria-role]");
+    invalidRoles.forEach((el) => {
+      const roleVal = el.getAttribute("aria-role");
+      if (roleVal) {
+        el.setAttribute("role", roleVal);
+      }
+      el.removeAttribute("aria-role");
+    });
+
+    // 2. Fix buttons without accessible names
+    const buttons = editorContainer.querySelectorAll("button");
+    buttons.forEach((btn) => {
+      if (!btn.getAttribute("aria-label") && !btn.innerText?.trim()) {
+        const title = btn.getAttribute("title");
+        btn.setAttribute("aria-label", title || "Tombol Alat Editor");
+      }
+    });
+
+    // 3. Fix pseudo clipboard textarea without accessible label
+    const clipboards = editorContainer.querySelectorAll("textarea");
+    clipboards.forEach((ta) => {
+      if (!ta.getAttribute("aria-label")) {
+        ta.setAttribute("aria-label", "Papan klip editor");
+      }
+    });
+  }
 
   onMount(async () => {
     try {
@@ -28,6 +60,20 @@
           },
         },
       });
+
+      sanitizeEditorA11y();
+
+      if (typeof MutationObserver !== "undefined") {
+        observer = new MutationObserver(() => {
+          sanitizeEditorA11y();
+        });
+        observer.observe(editorContainer, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["aria-role", "class"],
+        });
+      }
     } catch {
       editorInstance = null;
     }
@@ -46,6 +92,10 @@
   }
 
   onDestroy(() => {
+    if (observer) {
+      observer.disconnect();
+      observer = null;
+    }
     if (editorInstance) {
       editorInstance.destroy();
       editorInstance = null;
@@ -99,5 +149,27 @@
   :global(.toastui-editor-wrapper .toastui-editor-contents) {
     font-family: inherit;
     font-size: 0.875rem;
+  }
+  :global(.toastui-editor-wrapper .tab-item) {
+    color: #334155 !important;
+    background-color: #cbd5e1 !important;
+    font-weight: 600 !important;
+  }
+  :global(.toastui-editor-wrapper .tab-item.active) {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+  }
+  :global(.toastui-editor-wrapper .toastui-editor-mode-switch .tab-item) {
+    color: #334155 !important;
+    background-color: #e2e8f0 !important;
+    font-weight: 600 !important;
+  }
+  :global(.toastui-editor-wrapper .toastui-editor-mode-switch .tab-item.active) {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+  }
+  :global(.toastui-editor-wrapper .placeholder),
+  :global(.toastui-editor-wrapper .ProseMirror-widget.placeholder) {
+    color: #475569 !important;
   }
 </style>

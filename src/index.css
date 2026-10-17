@@ -15,3 +15,24 @@
     cursor: pointer;
   }
 }
+
+/* Toast UI Editor Accessibility & Contrast */
+.toastui-editor-wrapper .tab-item,
+.toastui-editor-tabs .tab-item,
+.toastui-editor-mode-switch .tab-item {
+  color: #334155 !important;
+  background-color: #cbd5e1 !important;
+  font-weight: 600 !important;
+}
+
+.toastui-editor-wrapper .tab-item.active,
+.toastui-editor-tabs .tab-item.active,
+.toastui-editor-mode-switch .tab-item.active {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+}
+
+.toastui-editor-contents .placeholder,
+.ProseMirror-widget.placeholder {
+  color: #475569 !important;
+}

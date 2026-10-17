@@ -278,7 +278,8 @@
             <select
               data-testid="select-rating"
               bind:value={selectedRating}
-              class="text-xs font-semibold text-amber-600 border-none focus:ring-0 bg-transparent cursor-pointer"
+              aria-label="Pilih rating kursus"
+              class="text-xs font-semibold text-amber-800 border-none focus:ring-0 bg-transparent cursor-pointer"
             >
               <option value={5}>⭐⭐⭐⭐⭐ (5)</option>
               <option value={4}>⭐⭐⭐⭐ (4)</option>

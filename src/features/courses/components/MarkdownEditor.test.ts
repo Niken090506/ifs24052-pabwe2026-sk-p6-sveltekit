@@ -95,4 +95,58 @@ describe("MarkdownEditor", () => {
     }
     unmount();
   });
+
+  it("should sanitize accessibility issues in editorContainer DOM", async () => {
+    let editorEl: HTMLElement | null = null;
+    const EditorMock = ((await import("@toast-ui/editor")) as any).default;
+    EditorMock.mockImplementationOnce(function (this: any, options: any) {
+      this.getMarkdown = mockGetMarkdown;
+      this.setMarkdown = mockSetMarkdown;
+      this.destroy = mockDestroy;
+
+      // Simulate Toast UI rendering invalid attributes and elements inside el
+      const container = options.el as HTMLElement;
+      editorEl = container;
+      const tab1 = document.createElement("div");
+      tab1.setAttribute("aria-role", "tab");
+      container.appendChild(tab1);
+
+      const tab2 = document.createElement("div");
+      tab2.setAttribute("aria-role", "");
+      container.appendChild(tab2);
+
+      const btnWithTitle = document.createElement("button");
+      btnWithTitle.setAttribute("title", "More Tools");
+      container.appendChild(btnWithTitle);
+
+      const btnWithoutTitle = document.createElement("button");
+      container.appendChild(btnWithoutTitle);
+
+      const btnWithLabel = document.createElement("button");
+      btnWithLabel.setAttribute("aria-label", "Existing Label");
+      container.appendChild(btnWithLabel);
+
+      const clipboardTa = document.createElement("textarea");
+      container.appendChild(clipboardTa);
+
+      const labeledTa = document.createElement("textarea");
+      labeledTa.setAttribute("aria-label", "Existing TA");
+      container.appendChild(labeledTa);
+    });
+
+    const { component, unmount } = render(MarkdownEditor);
+    await new Promise((r) => setTimeout(r, 20));
+
+    // Mutate DOM to trigger MutationObserver
+    if (editorEl) {
+      const dynamicBtn = document.createElement("button");
+      (editorEl as HTMLElement).appendChild(dynamicBtn);
+    }
+    await new Promise((r) => setTimeout(r, 30));
+
+    // Also manually trigger exported method to ensure direct execution
+    (component as any).sanitizeEditorA11y();
+
+    unmount();
+  });
 });

@@ -133,6 +133,7 @@
         <select
           data-testid="filter-course-select"
           bind:value={filter}
+          aria-label="Filter kategori kursus"
           class="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 shadow-xs transition-all"
         >
           <option value="">Semua Kursus</option>
@@ -155,7 +156,7 @@
         <div class="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
           <BookOpen size={32} />
         </div>
-        <h3 class="text-base font-bold text-slate-800">Belum Ada Kursus</h3>
+        <h2 class="text-base font-bold text-slate-800">Belum Ada Kursus</h2>
         <p class="text-sm text-slate-500 max-w-sm mt-1">
           {searchQuery ? "Tidak ada kursus yang cocok dengan pencarian Anda." : "Belum ada kursus yang tersedia. Tambahkan kursus pertama Anda!"}
         </p>
@@ -169,7 +170,11 @@
             class="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-lg hover:border-indigo-200 transition-all duration-200 flex flex-col overflow-hidden group"
           >
             <!-- Cover Image -->
-            <a href={`/courses/${course.id}`} class="block relative h-44 bg-slate-100 overflow-hidden">
+            <a
+              href={`/courses/${course.id}`}
+              aria-label={`Buka detail kursus ${course.title}`}
+              class="block relative h-44 bg-slate-100 overflow-hidden"
+            >
               {#if course.cover}
                 <img
                   src={course.cover}
@@ -183,7 +188,7 @@
               {/if}
 
               {#if isOwner}
-                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500 text-white shadow-xs">
+                <span class="absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-800 text-white shadow-xs">
                   Milik Saya
                 </span>
               {/if}
@@ -193,9 +198,9 @@
             <div class="p-5 flex-1 flex flex-col justify-between">
               <div>
                 <a href={`/courses/${course.id}`} class="block">
-                  <h3 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                  <h2 class="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
                     {course.title}
-                  </h3>
+                  </h2>
                 </a>
                 <p class="text-xs text-slate-500 mt-1.5 line-clamp-2">
                   {course.description || "Tidak ada deskripsi"}
@@ -205,7 +210,7 @@
               <!-- Meta Footer -->
               <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
                 <div class="flex items-center gap-3 text-xs text-slate-500">
-                  <span class="inline-flex items-center gap-1 text-amber-600 font-semibold">
+                  <span class="inline-flex items-center gap-1 text-amber-800 font-semibold">
                     <Star size={14} class="fill-amber-400 text-amber-400" />
                     {course.average_rating ? course.average_rating.toFixed(1) : "0.0"}
                   </span>
