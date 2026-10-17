@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import RootLayout from "./routes/+layout.svelte";
 import { ssr } from "./routes/+layout";
 import RootPage from "./routes/+page.svelte";
+import DashboardPageWrapper from "./routes/dashboard/+page.svelte";
 import RootError from "./routes/+error.svelte";
 import AuthLayout from "./routes/auth/+layout.svelte";
 import LoginPageWrapper from "./routes/auth/login/+page.svelte";
@@ -72,6 +73,16 @@ describe("SvelteKit Routes and Layouts", () => {
 
   it("should render RootPage (+page.svelte)", () => {
     const { wrapper } = renderWithProviders(RootPage, {
+      preloadedState: {
+        profile: { id: 1, name: "Logged User" },
+        courses: [],
+      },
+    });
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it("should render DashboardPageWrapper (routes/dashboard/+page.svelte)", () => {
+    const { wrapper } = renderWithProviders(DashboardPageWrapper, {
       preloadedState: {
         profile: { id: 1, name: "Logged User" },
         courses: [],
