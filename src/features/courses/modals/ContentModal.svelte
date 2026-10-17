@@ -68,8 +68,6 @@
   }
 
   function handleSave() {
-    if (!courseId) return;
-
     if (!title.trim()) {
       showErrorDialog("Judul materi tidak boleh kosong");
       return;

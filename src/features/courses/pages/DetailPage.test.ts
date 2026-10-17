@@ -300,4 +300,134 @@ describe("DetailPage", () => {
     expect(wrapper.find('[data-testid="empty-contents"]').exists()).toBe(true);
     expect(wrapper.text()).toContain("Peserta");
   });
+
+  it("should not redirect if course exists when isCourse is true", async () => {
+    mockGoto.mockClear();
+    const { coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    coursesStore.setIsCourse(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockGoto).not.toHaveBeenCalled();
+  });
+
+  it("should handle isStudentRegister when isStudentRegistered is false", async () => {
+    const { coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    const setCourseSpy = vi.spyOn(coursesStore, "asyncSetCourse");
+    setCourseSpy.mockClear();
+    coursesStore.setIsStudentRegistered(false);
+    coursesStore.setIsStudentRegister(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(setCourseSpy).not.toHaveBeenCalled();
+  });
+
+  it("should handle isStudentUnregister when isStudentUnregistered is false", async () => {
+    const { coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    const setCourseSpy = vi.spyOn(coursesStore, "asyncSetCourse");
+    setCourseSpy.mockClear();
+    coursesStore.setIsStudentUnregistered(false);
+    coursesStore.setIsStudentUnregister(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(setCourseSpy).not.toHaveBeenCalled();
+  });
+
+  it("should handle isRatingAdd when isRatingAdded is false", async () => {
+    const { coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    const setCourseSpy = vi.spyOn(coursesStore, "asyncSetCourse");
+    setCourseSpy.mockClear();
+    coursesStore.setIsRatingAdded(false);
+    coursesStore.setIsRatingAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(setCourseSpy).not.toHaveBeenCalled();
+  });
+
+  it("should render content item without video and unfinished status", () => {
+    const courseWithSimpleContent = {
+      ...mockCourse,
+      contents: [
+        {
+          id: 99,
+          course_id: 1,
+          title: "Materi Polos",
+          youtube_url: null,
+          content: "Penjelasan teks saja",
+          is_finished: 0,
+        },
+      ],
+    };
+
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: courseWithSimpleContent,
+      },
+    });
+
+    expect(wrapper.text()).toContain("Materi Polos");
+    expect(wrapper.text()).not.toContain("Selesai");
+  });
+
+  it("should not delete course or delete content when confirmation is cancelled", async () => {
+    vi.spyOn(toolsHelper, "showConfirmDialog").mockResolvedValue({ isConfirmed: false } as any);
+    const { wrapper, coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    const deleteCourseSpy = vi.spyOn(coursesStore, "asyncSetIsCourseDelete");
+    const deleteBtn = wrapper.find('[data-testid="delete-course-btn"]');
+    await deleteBtn.trigger("click");
+    expect(deleteCourseSpy).not.toHaveBeenCalled();
+
+    const deleteContentSpy = vi.spyOn(coursesStore, "asyncSetIsContentDelete");
+    const deleteContentBtn = wrapper.find('[data-testid="delete-content-btn-10"]');
+    await deleteContentBtn.trigger("click");
+    expect(deleteContentSpy).not.toHaveBeenCalled();
+  });
+
+  it("should not leave course when leave confirmation is cancelled", async () => {
+    vi.spyOn(toolsHelper, "showConfirmDialog").mockResolvedValue({ isConfirmed: false } as any);
+    const { wrapper, coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockStudentProfile,
+        course: mockCourse,
+      },
+    });
+
+    const leaveSpy = vi.spyOn(coursesStore, "asyncSetIsStudentUnregister");
+    const leaveBtn = wrapper.find('[data-testid="leave-course-btn"]');
+    await leaveBtn.trigger("click");
+    expect(leaveSpy).not.toHaveBeenCalled();
+  });
 });

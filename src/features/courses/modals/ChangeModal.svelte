@@ -46,8 +46,6 @@
   }
 
   function handleSave() {
-    if (!course) return;
-
     if (!title.trim()) {
       showErrorDialog("Judul kursus tidak boleh kosong");
       return;

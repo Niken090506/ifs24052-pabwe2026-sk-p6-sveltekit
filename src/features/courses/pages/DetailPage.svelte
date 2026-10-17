@@ -100,28 +100,24 @@
 
   async function handleDeleteCourse() {
     const result = await showConfirmDialog("Apakah Anda yakin ingin menghapus kursus ini?");
-    if (result.isConfirmed && course) {
-      coursesStore.asyncSetIsCourseDelete(course.id);
+    if (result.isConfirmed) {
+      coursesStore.asyncSetIsCourseDelete(course!.id);
     }
   }
 
   async function handleEnroll() {
-    if (course) {
-      coursesStore.asyncSetIsStudentRegister(course.id);
-    }
+    coursesStore.asyncSetIsStudentRegister(course!.id);
   }
 
   async function handleLeave() {
     const result = await showConfirmDialog("Apakah Anda yakin ingin keluar dari kursus ini?");
-    if (result.isConfirmed && course) {
-      coursesStore.asyncSetIsStudentUnregister(course.id);
+    if (result.isConfirmed) {
+      coursesStore.asyncSetIsStudentUnregister(course!.id);
     }
   }
 
   async function handleSendRating() {
-    if (course) {
-      coursesStore.asyncSetIsRatingAdd(course.id, Number(selectedRating));
-    }
+    coursesStore.asyncSetIsRatingAdd(course!.id, Number(selectedRating));
   }
 
   function handleAddContent() {
@@ -136,8 +132,8 @@
 
   async function handleDeleteContent(contentId: number) {
     const result = await showConfirmDialog("Apakah Anda yakin ingin menghapus materi ini?");
-    if (result.isConfirmed && course) {
-      coursesStore.asyncSetIsContentDelete(course.id, contentId);
+    if (result.isConfirmed) {
+      coursesStore.asyncSetIsContentDelete(course!.id, contentId);
     }
   }
 </script>

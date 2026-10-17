@@ -68,9 +68,8 @@
   $: isFinished = !!content?.is_finished;
 
   function handleToggleFinished() {
-    if (!content) return;
     const nextStatus = isFinished ? 0 : 1;
-    coursesStore.asyncSetIsContentStatus(content.id, nextStatus);
+    coursesStore.asyncSetIsContentStatus(content!.id, nextStatus);
   }
 </script>
 

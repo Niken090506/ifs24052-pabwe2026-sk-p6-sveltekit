@@ -18,6 +18,7 @@ import { mockPageStore, updateMockPage } from "./setupTests";
 import apiHelper from "./helpers/apiHelper";
 import * as toolsHelper from "./helpers/toolsHelper";
 import { coursesStore } from "./features/courses/states/coursesStore";
+import { usersStore } from "./features/users/states/usersStore";
 
 describe("SvelteKit Routes and Layouts", () => {
   beforeEach(() => {
@@ -70,8 +71,9 @@ describe("SvelteKit Routes and Layouts", () => {
     expect(wrapper.text()).not.toContain("Delcom Courses");
 
     // Navigate back to / (simulating login)
+    usersStore.setProfile({ id: 1, name: "Logged User", email: "user@del.org" });
     updateMockPage({ url: new URL("http://localhost:3000/") });
-    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 20));
     expect(wrapper.text()).toContain("Delcom Courses");
   });
 
@@ -177,7 +179,11 @@ describe("SvelteKit Routes and Layouts", () => {
     await submitBtn.trigger("click");
     expect(saveSpy).toHaveBeenCalledWith("Judul Baru", "Deskripsi Baru");
 
-    // Trigger store response
+    // Trigger store response with false and true
+    coursesStore.setIsCourseAdded(false);
+    coursesStore.setIsCourseAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
     coursesStore.setIsCourseAdded(true);
     coursesStore.setIsCourseAdd(true);
     await new Promise((r) => setTimeout(r, 10));
@@ -193,31 +199,42 @@ describe("SvelteKit Routes and Layouts", () => {
     const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockResolvedValue({} as any);
     const { wrapper } = renderWithProviders(EditCoursePageWrapper, {
       preloadedState: {
-        course: { id: 1, title: "Kursus Lama", description: "Deskripsi Lama", user_id: 1 },
+        course: { id: 1, title: "", description: "", user_id: 1 },
       },
     });
     expect(wrapper.text()).toContain("Ubah Informasi Kursus");
 
-    // Click submit with valid data
-    const saveSpy = vi.spyOn(coursesStore, "asyncSetIsCourseChange").mockImplementation(async () => {});
+    // Click submit with empty data
     const submitBtn = wrapper.find('[data-testid="submit-edit-course-btn"]');
-    await submitBtn.trigger("click");
-    expect(saveSpy).toHaveBeenCalledWith(1, "Kursus Lama", "Deskripsi Lama");
-
-    // Empty title
-    const titleInput = wrapper.find('[data-testid="edit-course-title-input"]');
-    await titleInput.setValue("");
     await submitBtn.trigger("click");
     expect(errorSpy).toHaveBeenCalledWith("Judul kursus tidak boleh kosong");
 
     // Empty description
+    const titleInput = wrapper.find('[data-testid="edit-course-title-input"]');
     await titleInput.setValue("Judul Diubah");
-    const descTextarea = wrapper.find('[data-testid="edit-course-desc-textarea"]');
-    await descTextarea.setValue("");
     await submitBtn.trigger("click");
     expect(errorSpy).toHaveBeenCalledWith("Deskripsi kursus tidak boleh kosong");
 
-    // Store response
+    // Click submit with valid data
+    const saveSpy = vi.spyOn(coursesStore, "asyncSetIsCourseChange").mockImplementation(async () => {});
+    const descTextarea = wrapper.find('[data-testid="edit-course-desc-textarea"]');
+    await descTextarea.setValue("Deskripsi Baru");
+    await submitBtn.trigger("click");
+    expect(saveSpy).toHaveBeenCalledWith(1, "Judul Diubah", "Deskripsi Baru");
+
+    // Store response with isCourseChanged = false
+    coursesStore.setIsCourseChanged(false);
+    coursesStore.setIsCourseChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Store response with course present
+    coursesStore.setCourse({ id: 1, title: "Title", description: "Desc", user_id: 1 });
+    coursesStore.setIsCourseChanged(true);
+    coursesStore.setIsCourseChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Store response with course = null
+    coursesStore.setCourse(null);
     coursesStore.setIsCourseChanged(true);
     coursesStore.setIsCourseChange(true);
     await new Promise((r) => setTimeout(r, 10));

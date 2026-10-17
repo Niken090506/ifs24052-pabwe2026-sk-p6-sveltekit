@@ -236,4 +236,54 @@ describe("ContentPage", () => {
     });
     expect(wrapper.find('[data-testid="youtube-iframe"]').exists()).toBe(false);
   });
+
+  it("should handle youtu.be url without pathname id", () => {
+    const { wrapper } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 17 },
+      preloadedState: {
+        profile: mockProfile,
+        content: {
+          id: 17,
+          course_id: 1,
+          title: "Empty Youtu.be",
+          youtube_url: "https://youtu.be/",
+          content: "Body",
+          is_finished: 0,
+        },
+      },
+    });
+    expect(wrapper.find('[data-testid="youtube-iframe"]').exists()).toBe(false);
+  });
+
+  it("should not redirect if content exists when isContent is true", async () => {
+    mockGoto.mockClear();
+    const { coursesStore } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 10 },
+      preloadedState: {
+        profile: mockProfile,
+        content: mockContentWithVideo,
+      },
+    });
+
+    coursesStore.setIsContent(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(mockGoto).not.toHaveBeenCalled();
+  });
+
+  it("should not refetch content if isContentStatusChanged is false", async () => {
+    const { coursesStore } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 10 },
+      preloadedState: {
+        profile: mockProfile,
+        content: mockContentWithVideo,
+      },
+    });
+
+    const fetchSpy = vi.spyOn(coursesStore, "asyncSetContent");
+    fetchSpy.mockClear();
+    coursesStore.setIsContentStatusChanged(false);
+    coursesStore.setIsContentStatusChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
 });

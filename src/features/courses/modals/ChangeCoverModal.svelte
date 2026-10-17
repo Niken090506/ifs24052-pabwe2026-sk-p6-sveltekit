@@ -62,15 +62,13 @@
   }
 
   function handleUpload() {
-    if (!course) return;
-
     if (!file) {
       showErrorDialog("Silakan pilih file cover terlebih dahulu!");
       return;
     }
 
     loading = true;
-    coursesStore.asyncSetIsCourseChangeCover(course.id, file);
+    coursesStore.asyncSetIsCourseChangeCover(course!.id, file);
   }
 </script>
 

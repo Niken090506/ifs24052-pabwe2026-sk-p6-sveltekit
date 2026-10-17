@@ -177,4 +177,15 @@ describe("ChangeCoverModal", () => {
     await closeBtn.trigger("click");
     expect(wrapper.exists()).toBe(true);
   });
+
+  it("should handle isCourseChangeCover without course present", async () => {
+    const { coursesStore } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: null },
+    });
+
+    coursesStore.setIsCourseChangedCover(true);
+    coursesStore.setIsCourseChangeCover(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(coursesStore.isCourseChangeCover).toBe(false);
+  });
 });
