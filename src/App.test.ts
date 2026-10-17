@@ -10,10 +10,14 @@ import RegisterPageWrapper from "./routes/auth/register/+page.svelte";
 import ProfilePageWrapper from "./routes/profile/+page.svelte";
 import CourseDetailPageWrapper from "./routes/courses/[courseId]/+page.svelte";
 import CourseContentPageWrapper from "./routes/courses/[courseId]/contents/[contentId]/+page.svelte";
+import CreateCoursePageWrapper from "./routes/courses/create/+page.svelte";
+import EditCoursePageWrapper from "./routes/courses/edit/+page.svelte";
 import UsersPageWrapper from "./routes/users/+page.svelte";
 import { renderWithProviders } from "./test-utils";
 import { mockPageStore, updateMockPage } from "./setupTests";
 import apiHelper from "./helpers/apiHelper";
+import * as toolsHelper from "./helpers/toolsHelper";
+import { coursesStore } from "./features/courses/states/coursesStore";
 
 describe("SvelteKit Routes and Layouts", () => {
   beforeEach(() => {
@@ -148,5 +152,94 @@ describe("SvelteKit Routes and Layouts", () => {
       },
     });
     expect(wrapper.text()).toContain("Semua Pengguna");
+  });
+
+  it("should render CreateCoursePageWrapper and handle form interactions", async () => {
+    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockResolvedValue({} as any);
+    const { wrapper } = renderWithProviders(CreateCoursePageWrapper);
+    expect(wrapper.text()).toContain("Tambah Kursus Baru");
+
+    // Click submit without title
+    const submitBtn = wrapper.find('[data-testid="submit-create-course-btn"]');
+    await submitBtn.trigger("click");
+    expect(errorSpy).toHaveBeenCalledWith("Judul kursus tidak boleh kosong");
+
+    // Fill title but empty description
+    const titleInput = wrapper.find('[data-testid="create-course-title-input"]');
+    await titleInput.setValue("Judul Baru");
+    await submitBtn.trigger("click");
+    expect(errorSpy).toHaveBeenCalledWith("Deskripsi kursus tidak boleh kosong");
+
+    // Fill description and save
+    const saveSpy = vi.spyOn(coursesStore, "asyncSetIsCourseAdd").mockImplementation(async () => {});
+    const descTextarea = wrapper.find('[data-testid="create-course-desc-textarea"]');
+    await descTextarea.setValue("Deskripsi Baru");
+    await submitBtn.trigger("click");
+    expect(saveSpy).toHaveBeenCalledWith("Judul Baru", "Deskripsi Baru");
+
+    // Trigger store response
+    coursesStore.setIsCourseAdded(true);
+    coursesStore.setIsCourseAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Cancel and back button
+    const backBtn = wrapper.find('[data-testid="back-to-courses-btn"]');
+    await backBtn.trigger("click");
+    const cancelBtn = wrapper.find('[data-testid="cancel-create-course-btn"]');
+    await cancelBtn.trigger("click");
+  });
+
+  it("should render EditCoursePageWrapper and handle form interactions", async () => {
+    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockResolvedValue({} as any);
+    const { wrapper } = renderWithProviders(EditCoursePageWrapper, {
+      preloadedState: {
+        course: { id: 1, title: "Kursus Lama", description: "Deskripsi Lama", user_id: 1 },
+      },
+    });
+    expect(wrapper.text()).toContain("Ubah Informasi Kursus");
+
+    // Click submit with valid data
+    const saveSpy = vi.spyOn(coursesStore, "asyncSetIsCourseChange").mockImplementation(async () => {});
+    const submitBtn = wrapper.find('[data-testid="submit-edit-course-btn"]');
+    await submitBtn.trigger("click");
+    expect(saveSpy).toHaveBeenCalledWith(1, "Kursus Lama", "Deskripsi Lama");
+
+    // Empty title
+    const titleInput = wrapper.find('[data-testid="edit-course-title-input"]');
+    await titleInput.setValue("");
+    await submitBtn.trigger("click");
+    expect(errorSpy).toHaveBeenCalledWith("Judul kursus tidak boleh kosong");
+
+    // Empty description
+    await titleInput.setValue("Judul Diubah");
+    const descTextarea = wrapper.find('[data-testid="edit-course-desc-textarea"]');
+    await descTextarea.setValue("");
+    await submitBtn.trigger("click");
+    expect(errorSpy).toHaveBeenCalledWith("Deskripsi kursus tidak boleh kosong");
+
+    // Store response
+    coursesStore.setIsCourseChanged(true);
+    coursesStore.setIsCourseChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    // Cancel and back button
+    const backBtn = wrapper.find('[data-testid="back-from-edit-btn"]');
+    await backBtn.trigger("click");
+    const cancelBtn = wrapper.find('[data-testid="cancel-edit-course-btn"]');
+    await cancelBtn.trigger("click");
+  });
+
+  it("should handle EditCoursePageWrapper when no course is in store", async () => {
+    const { wrapper } = renderWithProviders(EditCoursePageWrapper, {
+      preloadedState: {
+        course: null,
+      },
+    });
+    const titleInput = wrapper.find('[data-testid="edit-course-title-input"]');
+    const descTextarea = wrapper.find('[data-testid="edit-course-desc-textarea"]');
+    await titleInput.setValue("Judul");
+    await descTextarea.setValue("Deskripsi");
+    const submitBtn = wrapper.find('[data-testid="submit-edit-course-btn"]');
+    await submitBtn.trigger("click");
   });
 });
