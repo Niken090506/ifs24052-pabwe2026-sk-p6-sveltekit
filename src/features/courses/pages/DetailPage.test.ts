@@ -233,4 +233,71 @@ describe("DetailPage", () => {
     await new Promise((r) => setTimeout(r, 10));
     expect(fetchSpy).toHaveBeenCalledWith(1);
   });
+
+  it("should re-fetch course when courseId prop changes", async () => {
+    const { rerender, coursesStore } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    const fetchSpy = vi.spyOn(coursesStore, "asyncSetCourse").mockImplementation(() => Promise.resolve());
+    await rerender({ courseId: 2 });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(fetchSpy).toHaveBeenCalledWith(2);
+  });
+
+  it("should close modals via their close callbacks", async () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: mockCourse,
+      },
+    });
+
+    // Open & close edit cover modal
+    const coverBtn = wrapper.find('[data-testid="edit-cover-btn"]');
+    await coverBtn.trigger("click");
+    expect(wrapper.find('[data-testid="change-cover-modal"]').exists()).toBe(true);
+    const closeCoverBtn = wrapper.find('[data-testid="close-change-cover-modal-btn"]');
+    await closeCoverBtn.trigger("click");
+    expect(wrapper.find('[data-testid="change-cover-modal"]').exists()).toBe(false);
+
+    // Open & close edit course modal
+    const editBtn = wrapper.find('[data-testid="edit-course-btn"]');
+    await editBtn.trigger("click");
+    expect(wrapper.find('[data-testid="change-course-modal"]').exists()).toBe(true);
+    const closeEditBtn = wrapper.find('[data-testid="close-change-course-modal-btn"]');
+    await closeEditBtn.trigger("click");
+    expect(wrapper.find('[data-testid="change-course-modal"]').exists()).toBe(false);
+
+    // Open & close content modal
+    const addContentBtn = wrapper.find('[data-testid="add-content-btn"]');
+    await addContentBtn.trigger("click");
+    expect(wrapper.find('[data-testid="content-modal"]').exists()).toBe(true);
+    const closeContentBtn = wrapper.find('[data-testid="close-content-modal-btn"]');
+    await closeContentBtn.trigger("click");
+    expect(wrapper.find('[data-testid="content-modal"]').exists()).toBe(false);
+  });
+
+  it("should render empty contents and student with null name/email", () => {
+    const { wrapper } = renderWithProviders(DetailPage, {
+      props: { courseId: 1 },
+      preloadedState: {
+        profile: mockOwnerProfile,
+        course: {
+          ...mockCourse,
+          contents: [],
+          students: [{ id: 99, user_id: 99, name: null, email: null }],
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-testid="empty-contents"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain("Peserta");
+  });
 });

@@ -165,4 +165,75 @@ describe("ContentPage", () => {
 
     expect(fetchSpy).toHaveBeenCalledWith(10);
   });
+
+  it("should handle non-youtube url gracefully in embed url parser", () => {
+    const { wrapper } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 14 },
+      preloadedState: {
+        profile: mockProfile,
+        content: {
+          id: 14,
+          course_id: 1,
+          title: "Vimeo or Other",
+          youtube_url: "https://vimeo.com/123456",
+          content: "Teks saja",
+          is_finished: 0,
+        },
+      },
+    });
+
+    expect(wrapper.find('[data-testid="youtube-iframe"]').exists()).toBe(false);
+  });
+
+  it("should re-fetch content when contentId prop changes", async () => {
+    const { rerender, coursesStore } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 10 },
+      preloadedState: {
+        profile: mockProfile,
+        content: mockContentWithVideo,
+      },
+    });
+
+    const fetchSpy = vi.spyOn(coursesStore, "asyncSetContent").mockImplementation(() => Promise.resolve());
+    await rerender({ courseId: 1, contentId: 20 });
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(fetchSpy).toHaveBeenCalledWith(20);
+  });
+
+  it("should handle content with null body text", () => {
+    const { wrapper } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 15 },
+      preloadedState: {
+        profile: mockProfile,
+        content: {
+          id: 15,
+          course_id: 1,
+          title: "Tanpa Body",
+          youtube_url: null,
+          content: null,
+          is_finished: 0,
+        },
+      },
+    });
+    expect(wrapper.text()).toContain("Tanpa Body");
+  });
+
+  it("should handle youtube url without v param and not embed", () => {
+    const { wrapper } = renderWithProviders(ContentPage, {
+      props: { courseId: 1, contentId: 16 },
+      preloadedState: {
+        profile: mockProfile,
+        content: {
+          id: 16,
+          course_id: 1,
+          title: "Channel URL",
+          youtube_url: "https://www.youtube.com/channel/abc",
+          content: "Body",
+          is_finished: 0,
+        },
+      },
+    });
+    expect(wrapper.find('[data-testid="youtube-iframe"]').exists()).toBe(false);
+  });
 });

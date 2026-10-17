@@ -374,5 +374,49 @@ describe("coursesStore", () => {
       expect(coursesStore.isContentStatusChange).toBe(true);
       expect(errorSpy).toHaveBeenCalledWith("Status error");
     });
+
+    it("handles fallback success messages when API returns empty string", async () => {
+      const successSpy = vi.spyOn(toolsHelper, "showSuccessDialog").mockResolvedValue({} as any);
+
+      vi.spyOn(courseApi, "putCourse").mockResolvedValue("");
+      await coursesStore.asyncSetIsCourseChange(1, "t", "d");
+      expect(successSpy).toHaveBeenCalledWith("Kursus berhasil diubah!");
+
+      vi.spyOn(courseApi, "postCourseCover").mockResolvedValue("");
+      await coursesStore.asyncSetIsCourseChangeCover(1, new File([""], "c.jpg"));
+      expect(successSpy).toHaveBeenCalledWith("Cover kursus berhasil diubah!");
+
+      vi.spyOn(courseApi, "deleteCourse").mockResolvedValue("");
+      await coursesStore.asyncSetIsCourseDelete(1);
+      expect(successSpy).toHaveBeenCalledWith("Kursus berhasil dihapus!");
+
+      vi.spyOn(courseApi, "deleteAllCourses").mockResolvedValue("");
+      await coursesStore.asyncSetIsCoursesDelete();
+      expect(successSpy).toHaveBeenCalledWith("Semua kursus berhasil dihapus!");
+
+      vi.spyOn(courseApi, "postStudent").mockResolvedValue("");
+      await coursesStore.asyncSetIsStudentRegister(1);
+      expect(successSpy).toHaveBeenCalledWith("Berhasil mendaftar kursus!");
+
+      vi.spyOn(courseApi, "deleteStudent").mockResolvedValue("");
+      await coursesStore.asyncSetIsStudentUnregister(1);
+      expect(successSpy).toHaveBeenCalledWith("Berhasil keluar dari kursus!");
+
+      vi.spyOn(courseApi, "postRating").mockResolvedValue("");
+      await coursesStore.asyncSetIsRatingAdd(1, 5);
+      expect(successSpy).toHaveBeenCalledWith("Rating berhasil diberikan!");
+
+      vi.spyOn(courseApi, "putContent").mockResolvedValue("");
+      await coursesStore.asyncSetIsContentChange(1, 10, "t", "y", "c");
+      expect(successSpy).toHaveBeenCalledWith("Materi berhasil diubah!");
+
+      vi.spyOn(courseApi, "deleteContent").mockResolvedValue("");
+      await coursesStore.asyncSetIsContentDelete(1, 10);
+      expect(successSpy).toHaveBeenCalledWith("Materi berhasil dihapus!");
+
+      vi.spyOn(courseApi, "putContentStatus").mockResolvedValue("");
+      await coursesStore.asyncSetIsContentStatus(10, 1);
+      expect(successSpy).toHaveBeenCalledWith("Status belajar berhasil diperbarui!");
+    });
   });
 });

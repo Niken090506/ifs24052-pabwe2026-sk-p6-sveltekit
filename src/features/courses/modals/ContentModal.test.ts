@@ -170,4 +170,74 @@ describe("ContentModal", () => {
     expect(fetchSpy).toHaveBeenCalledWith(1);
     expect(closeSpy).toHaveBeenCalled();
   });
+
+  it("should not close when isContentAdd is true but isContentAdded is false", async () => {
+    const closeSpy = vi.fn();
+    const { coursesStore } = renderWithProviders(ContentModal, {
+      props: { show: true, courseId: 1, content: null, onClose: closeSpy },
+    });
+
+    coursesStore.setIsContentAdded(false);
+    coursesStore.setIsContentAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should not close when isContentChange is true but isContentChanged is false", async () => {
+    const closeSpy = vi.fn();
+    const { coursesStore } = renderWithProviders(ContentModal, {
+      props: { show: true, courseId: 1, content: mockContent, onClose: closeSpy },
+    });
+
+    coursesStore.setIsContentChanged(false);
+    coursesStore.setIsContentChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should handle content with null title, youtubeUrl, or bodyContent", () => {
+    const { wrapper } = renderWithProviders(ContentModal, {
+      props: {
+        show: true,
+        courseId: 1,
+        content: { id: 10, title: null, youtube_url: null, content: null } as any,
+      },
+    });
+    expect(wrapper.find('[data-testid="content-title-input"]').element).toBeTruthy();
+  });
+
+  it("should close without onClose callback", async () => {
+    const { wrapper } = renderWithProviders(ContentModal, {
+      props: { show: true, courseId: 1 },
+    });
+
+    const closeBtn = wrapper.find('[data-testid="close-content-modal-btn"]');
+    await closeBtn.trigger("click");
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it("should not render modal and save button when courseId is null", () => {
+    const { wrapper } = renderWithProviders(ContentModal, {
+      props: { show: true, courseId: null },
+    });
+
+    expect(wrapper.find('[data-testid="content-modal"]').exists()).toBe(false);
+  });
+
+  it("should handle isContentAdd and isContentChange without courseId", async () => {
+    const { coursesStore } = renderWithProviders(ContentModal, {
+      props: { show: true, courseId: null },
+    });
+
+    coursesStore.setIsContentAdded(true);
+    coursesStore.setIsContentAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    coursesStore.setIsContentChanged(true);
+    coursesStore.setIsContentChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(coursesStore.isContentChange).toBe(false);
+  });
 });

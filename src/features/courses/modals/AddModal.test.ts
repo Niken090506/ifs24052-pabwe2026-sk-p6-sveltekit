@@ -106,4 +106,17 @@ describe("AddModal", () => {
     await closeBtn.trigger("click");
     expect(wrapper.exists()).toBe(true);
   });
+
+  it("should not reset or close when isCourseAdd is true but isCourseAdded is false", async () => {
+    const closeSpy = vi.fn();
+    const { coursesStore } = renderWithProviders(AddModal, {
+      props: { show: true, onClose: closeSpy },
+    });
+
+    coursesStore.setIsCourseAdded(false);
+    coursesStore.setIsCourseAdd(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
 });

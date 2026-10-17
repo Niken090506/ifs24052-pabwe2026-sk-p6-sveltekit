@@ -464,16 +464,30 @@ describe("courseApi", () => {
 
       const res = await courseApi.putContentStatus(10, 1);
       expect(res).toBe("Berhasil memperbarui status belajar");
+
+      const res0 = await courseApi.putContentStatus(10, 0);
+      expect(res0).toBe("Berhasil memperbarui status belajar");
     });
 
     it("should throw on update content status fail", async () => {
       vi.spyOn(apiHelper, "fetchData").mockResolvedValue({
         json: async () => ({
           status: "fail",
+          message: "Status gagal",
         }),
       } as any);
 
-      await expect(courseApi.putContentStatus(10, 1)).rejects.toThrow("Gagal memperbarui status belajar");
+      await expect(courseApi.putContentStatus(10, 1)).rejects.toThrow("Status gagal");
+    });
+
+    it("should use fallback error message on update content status fail", async () => {
+      vi.spyOn(apiHelper, "fetchData").mockResolvedValue({
+        json: async () => ({
+          status: "fail",
+        }),
+      } as any);
+
+      await expect(courseApi.putContentStatus(10, 0)).rejects.toThrow("Gagal memperbarui status belajar");
     });
   });
 });

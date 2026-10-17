@@ -122,4 +122,59 @@ describe("ChangeCoverModal", () => {
     expect(fetchCourseSpy).toHaveBeenCalledWith(1);
     expect(closeSpy).toHaveBeenCalled();
   });
+
+  it("should render placeholder icon when course has no cover", () => {
+    const { wrapper } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: { id: 1, title: "No Cover", cover: null } },
+    });
+    expect(wrapper.text()).toContain("Pilih berkas cover");
+  });
+
+  it("should not close when isCourseChangeCover is true but isCourseChangedCover is false", async () => {
+    const closeSpy = vi.fn();
+    const { coursesStore } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: mockCourse, onClose: closeSpy },
+    });
+
+    coursesStore.setIsCourseChangedCover(false);
+    coursesStore.setIsCourseChangeCover(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should show error when upload clicked without selecting file", async () => {
+    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockResolvedValue({} as any);
+    const { wrapper } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: mockCourse },
+    });
+
+    const uploadBtn = wrapper.find('[data-testid="upload-cover-btn"]');
+    await uploadBtn.trigger("click");
+    expect(errorSpy).toHaveBeenCalledWith("Silakan pilih file cover terlebih dahulu!");
+  });
+
+  it("should handle file change with empty files list", async () => {
+    const { wrapper } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: mockCourse },
+    });
+
+    const fileInput = wrapper.find('[data-testid="cover-file-input"]');
+    Object.defineProperty(fileInput.element, "files", {
+      value: [],
+      configurable: true,
+    });
+    await fileInput.trigger("change");
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it("should close without onClose prop defined", async () => {
+    const { wrapper } = renderWithProviders(ChangeCoverModal, {
+      props: { show: true, course: mockCourse },
+    });
+
+    const closeBtn = wrapper.find('[data-testid="close-change-cover-modal-btn"]');
+    await closeBtn.trigger("click");
+    expect(wrapper.exists()).toBe(true);
+  });
 });

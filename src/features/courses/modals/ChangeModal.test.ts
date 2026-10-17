@@ -110,4 +110,48 @@ describe("ChangeModal", () => {
     expect(fetchCourseSpy).toHaveBeenCalledWith(1);
     expect(closeSpy).toHaveBeenCalled();
   });
+
+  it("should handle course with null title and description", () => {
+    const { wrapper } = renderWithProviders(ChangeModal, {
+      props: {
+        show: true,
+        course: { id: 1, title: null, description: null } as any,
+      },
+    });
+    expect(wrapper.find('[data-testid="edit-course-title-input"]').element).toBeTruthy();
+  });
+
+  it("should not close when isCourseChange is true but isCourseChanged is false", async () => {
+    const closeSpy = vi.fn();
+    const { coursesStore } = renderWithProviders(ChangeModal, {
+      props: { show: true, course: mockCourse, onClose: closeSpy },
+    });
+
+    coursesStore.setIsCourseChanged(false);
+    coursesStore.setIsCourseChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should close without onClose prop defined", async () => {
+    const { wrapper } = renderWithProviders(ChangeModal, {
+      props: { show: true, course: mockCourse },
+    });
+
+    const closeBtn = wrapper.find('[data-testid="close-change-course-modal-btn"]');
+    await closeBtn.trigger("click");
+    expect(wrapper.exists()).toBe(true);
+  });
+
+  it("should handle isCourseChange without course present", async () => {
+    const { coursesStore } = renderWithProviders(ChangeModal, {
+      props: { show: true, course: null },
+    });
+
+    coursesStore.setIsCourseChanged(true);
+    coursesStore.setIsCourseChange(true);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(coursesStore.isCourseChange).toBe(false);
+  });
 });
